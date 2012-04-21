@@ -458,6 +458,13 @@ class Netflix(object):
             args['output'] = 'json'
         args['method'] = verb.upper()
 
+        postbody = None
+        if verb.upper() == 'POST':
+            args['method'] = 'GET'
+            postbody = '&'.join(['%s=%s' % (escape(str(k)), escape(str(v))) \
+                for k, v in args.iteritems()])
+            args = {}
+
         # we don't want unicode in the parameters
         for k,v in args.iteritems():
             try:
@@ -474,7 +481,7 @@ class Netflix(object):
                             token)
         if filename is None:
             def do_request():
-                req = self.http.urlopen('GET', oa_req.to_url())
+                req = self.http.urlopen(verb, oa_req.to_url(), body=postbody)
                 if not str(req.status).startswith('2'):
                     self.analyze_error(req)
                 return req
